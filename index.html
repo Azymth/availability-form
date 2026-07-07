@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Availability Form — July & August 2026</title>
+<style>
+  :root {
+    --blue: #2563eb;
+    --indigo: #4f46e5;
+    --blue-light: #eff6ff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --green: #22c55e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+    min-height: 100vh;
+    padding: 32px 16px;
+    color: var(--text);
+  }
+  .card {
+    max-width: 640px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.12);
+    padding: 32px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="email"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+  input:focus { outline: 2px solid var(--blue); border-color: transparent; }
+
+  .calendar-box {
+    background: linear-gradient(90deg, #eff6ff, #eef2ff);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cal-nav button {
+    background: none;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .cal-nav button:hover:not(:disabled) { background: #fff; }
+  .cal-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cal-nav h2 { font-size: 17px; }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .dow {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 6px 0;
+  }
+  .day {
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day:hover { border-color: var(--blue); background: var(--blue-light); }
+  .day.selected {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.3);
+  }
+  .day.empty { border: none; background: transparent; cursor: default; }
+
+  .chips {
+    background: var(--blue-light);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .chips.visible { display: block; }
+  .chips p { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: #bfdbfe;
+    color: #1e40af;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip button {
+    background: none; border: none; cursor: pointer;
+    color: #1e40af; font-size: 14px; line-height: 1; padding: 0;
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(90deg, var(--blue), var(--indigo));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, opacity 0.2s;
+  }
+  .submit-btn:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .msg {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: none;
+  }
+  .msg.error { display: block; background: #fef2f2; color: #b91c1c; }
+
+  .success-screen {
+    text-align: center;
+    padding: 40px 20px;
+    display: none;
+  }
+  .success-screen.visible { display: block; }
+  .success-screen .check {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: var(--green);
+    font-size: 34px;
+    line-height: 64px;
+    margin: 0 auto 16px;
+  }
+  .success-screen h2 { margin-bottom: 8px; }
+  .success-screen p { color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div id="formView">
+      <h1>📅 Availability Form</h1>
+      <p class="subtitle">Select all the dates you're available in July &amp; August 2026</p>
+
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Enter your name" autocomplete="name">
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+
+      <label>Select Available Dates</label>
+      <div class="calendar-box">
+        <div class="cal-nav">
+          <button type="button" id="prevBtn">← Previous</button>
+          <h2 id="monthLabel"></h2>
+          <button type="button" id="nextBtn">Next →</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div class="chips" id="chips">
+        <p id="chipCount"></p>
+        <div class="chip-list" id="chipList"></div>
+      </div>
+
+      <button type="button" class="submit-btn" id="submitBtn">Submit Availability</button>
+      <div class="msg error" id="errorMsg"></div>
+    </div>
+
+    <div class="success-screen" id="successView">
+      <div class="check">✓</div>
+      <h2>Success!</h2>
+      <p>Your availability has been submitted. Thank you!</p>
+    </div>
+  </div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxq6ac1_MFU-gRmtYNP55yhzvKxicYJU5L5i5-RgqmsMqafmu__UdNuRbtxSNb8olUL8g/exec';
+
+  // Months: 6 = July, 7 = August (2026 only)
+  let currentMonth = 6;
+  let selectedDates = [];
+
+  const calGrid = document.getElementById('calGrid');
+  const monthLabel = document.getElementById('monthLabel');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const chips = document.getElementById('chips');
+  const chipList = document.getElementById('chipList');
+  const chipCount = document.getElementById('chipCount');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorMsg = document.getElementById('errorMsg');
+
+  function dateKey(month, day) {
+    return '2026-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+
+  function renderCalendar() {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    monthLabel.textContent = monthNames[currentMonth] + ' 2026';
+    prevBtn.disabled = currentMonth === 6;
+    nextBtn.disabled = currentMonth === 7;
+
+    calGrid.innerHTML = '';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'dow';
+      el.textContent = d;
+      calGrid.appendChild(el);
+    });
+
+    const firstDay = new Date(2026, currentMonth, 1).getDay();
+    const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const el = document.createElement('div');
+      el.className = 'day empty';
+      calGrid.appendChild(el);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = dateKey(currentMonth, day);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'day' + (selectedDates.includes(key) ? ' selected' : '');
+      btn.textContent = day;
+      btn.onclick = () => toggleDate(key);
+      calGrid.appendChild(btn);
+    }
+  }
+
+  function toggleDate(key) {
+    if (selectedDates.includes(key)) {
+      selectedDates = selectedDates.filter(d => d !== key);
+    } else {
+      selectedDates.push(key);
+    }
+    renderCalendar();
+    renderChips();
+  }
+
+  function renderChips() {
+    if (selectedDates.length === 0) {
+      chips.classList.remove('visible');
+      return;
+    }
+    chips.classList.add('visible');
+    chipCount.textContent = 'Selected Dates (' + selectedDates.length + '):';
+    chipList.innerHTML = '';
+    [...selectedDates].sort().forEach(key => {
+      const [y, m, d] = key.split('-');
+      const label = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = label + ' ';
+      const x = document.createElement('button');
+      x.textContent = '✕';
+      x.setAttribute('aria-label', 'Remove ' + label);
+      x.onclick = () => toggleDate(key);
+      chip.appendChild(x);
+      chipList.appendChild(chip);
+    });
+  }
+
+  async function handleSubmit() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    errorMsg.style.display = 'none';
+
+    if (!name || !email || selectedDates.length === 0) {
+      errorMsg.textContent = 'Please fill in your name, email, and select at least one date.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('availableDates', [...selectedDates].sort().join(', '));
+    formData.append('submittedAt', new Date().toLocaleString());
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData
+      });
+      // no-cors responses are opaque; if fetch didn't throw, the request was sent
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('successView').classList.add('visible');
+    } catch (err) {
+      console.error(err);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Availability';
+      errorMsg.textContent = 'Something went wrong sending your response. Please check your internet connection and try again.';
+      errorMsg.style.display = 'block';
+    }
+  }
+
+  prevBtn.onclick = () => { if (currentMonth > 6) { currentMonth--; renderCalendar(); } };
+  nextBtn.onclick = () => { if (currentMonth < 7) { currentMonth++; renderCalendar(); } };
+  submitBtn.onclick = handleSubmit;
+
+  renderCalendar();
+</script>
+</body>
+</html>
