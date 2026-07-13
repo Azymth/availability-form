@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALC EXCO SNCS 1 Availability</title>
+<style>
+  :root {
+    --green-main: #3a6b5c;
+    --green-deep: #2a5245;
+    --green-light: #edf5f1;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --green: #22c55e;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #edf5f1 0%, #dcebe3 100%);
+    min-height: 100vh;
+    padding: 32px 16px;
+    color: var(--text);
+  }
+  .card {
+    max-width: 640px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(58, 107, 92, 0.15);
+    padding: 32px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  input[type="text"], input[type="email"], input[type="tel"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+  input:focus { outline: 2px solid var(--green-main); border-color: transparent; }
+
+  .calendar-box {
+    background: linear-gradient(90deg, #edf5f1, #e3efe9);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+  }
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cal-nav button {
+    background: none;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .cal-nav button:hover:not(:disabled) { background: #fff; }
+  .cal-nav button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cal-nav h2 { font-size: 17px; }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .dow {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 6px 0;
+  }
+  .day {
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day:hover { border-color: var(--green-main); background: var(--green-light); }
+  .day.selected {
+    background: var(--green-main);
+    border-color: var(--green-main);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(58, 107, 92, 0.35);
+  }
+  .day.empty { border: none; background: transparent; cursor: default; }
+  .day.unavailable {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #b0b5bd;
+    cursor: not-allowed;
+  }
+  .day.unavailable:hover { background: #f3f4f6; border-color: #e5e7eb; }
+
+  .chips {
+    background: var(--green-light);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .chips.visible { display: block; }
+  .chips p { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: #c9e0d5;
+    color: #234b3e;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip button {
+    background: none; border: none; cursor: pointer;
+    color: #234b3e; font-size: 14px; line-height: 1; padding: 0;
+  }
+
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(90deg, var(--green-main), var(--green-deep));
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, opacity 0.2s;
+  }
+  .submit-btn:hover:not(:disabled) { box-shadow: 0 6px 16px rgba(58, 107, 92, 0.4); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .msg {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: none;
+  }
+  .msg.error { display: block; background: #fef2f2; color: #b91c1c; }
+
+  .success-screen {
+    text-align: center;
+    padding: 40px 20px;
+    display: none;
+  }
+  .success-screen.visible { display: block; }
+  .success-screen .check {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: var(--green);
+    font-size: 34px;
+    line-height: 64px;
+    margin: 0 auto 16px;
+  }
+  .success-screen h2 { margin-bottom: 8px; }
+  .success-screen p { color: var(--muted); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div id="formView">
+      <h1>📅 ALC EXCO SNCS 1 Availability</h1>
+      <p class="subtitle">SNCS Certification will be held at UpWall Downtown East, $56 per pax.<br>Select all the Fridays, Saturdays &amp; Sundays you're available from July to September 2026.</p>
+
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Enter your name" autocomplete="name">
+
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="Enter your email" autocomplete="email">
+
+      <label for="mobile">Mobile Number</label>
+      <input type="tel" id="mobile" placeholder="Enter your mobile number" autocomplete="tel">
+
+      <label>Select Available Dates</label>
+      <div class="calendar-box">
+        <div class="cal-nav">
+          <button type="button" id="prevBtn">← Previous</button>
+          <h2 id="monthLabel"></h2>
+          <button type="button" id="nextBtn">Next →</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div class="chips" id="chips">
+        <p id="chipCount"></p>
+        <div class="chip-list" id="chipList"></div>
+      </div>
+
+      <button type="button" class="submit-btn" id="submitBtn">Submit Availability</button>
+      <div class="msg error" id="errorMsg"></div>
+    </div>
+
+    <div class="success-screen" id="successView">
+      <div class="check">✓</div>
+      <h2>Success!</h2>
+      <p>Your availability has been submitted. Thank you!</p>
+    </div>
+  </div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxq6ac1_MFU-gRmtYNP55yhzvKxicYJU5L5i5-RgqmsMqafmu__UdNuRbtxSNb8olUL8g/exec';
+
+  // Months: 6 = July, 7 = August, 8 = September (2026 only)
+  let currentMonth = 6;
+  let selectedDates = [];
+
+  const calGrid = document.getElementById('calGrid');
+  const monthLabel = document.getElementById('monthLabel');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const chips = document.getElementById('chips');
+  const chipList = document.getElementById('chipList');
+  const chipCount = document.getElementById('chipCount');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorMsg = document.getElementById('errorMsg');
+
+  function dateKey(month, day) {
+    return '2026-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+
+  function renderCalendar() {
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    monthLabel.textContent = monthNames[currentMonth] + ' 2026';
+    prevBtn.disabled = currentMonth === 6;
+    nextBtn.disabled = currentMonth === 8;
+
+    calGrid.innerHTML = '';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'dow';
+      el.textContent = d;
+      calGrid.appendChild(el);
+    });
+
+    const firstDay = new Date(2026, currentMonth, 1).getDay();
+    const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      const el = document.createElement('div');
+      el.className = 'day empty';
+      calGrid.appendChild(el);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = dateKey(currentMonth, day);
+      const dow = new Date(2026, currentMonth, day).getDay();
+      const isSelectable = dow === 5 || dow === 6 || dow === 0; // Fri, Sat, Sun
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = day;
+      if (isSelectable) {
+        btn.className = 'day' + (selectedDates.includes(key) ? ' selected' : '');
+        btn.onclick = () => toggleDate(key);
+      } else {
+        btn.className = 'day unavailable';
+        btn.disabled = true;
+      }
+      calGrid.appendChild(btn);
+    }
+  }
+
+  function toggleDate(key) {
+    if (selectedDates.includes(key)) {
+      selectedDates = selectedDates.filter(d => d !== key);
+    } else {
+      selectedDates.push(key);
+    }
+    renderCalendar();
+    renderChips();
+  }
+
+  function renderChips() {
+    if (selectedDates.length === 0) {
+      chips.classList.remove('visible');
+      return;
+    }
+    chips.classList.add('visible');
+    chipCount.textContent = 'Selected Dates (' + selectedDates.length + '):';
+    chipList.innerHTML = '';
+    [...selectedDates].sort().forEach(key => {
+      const [y, m, d] = key.split('-');
+      const label = new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const chip = document.createElement('span');
+      chip.className = 'chip';
+      chip.textContent = label + ' ';
+      const x = document.createElement('button');
+      x.textContent = '✕';
+      x.setAttribute('aria-label', 'Remove ' + label);
+      x.onclick = () => toggleDate(key);
+      chip.appendChild(x);
+      chipList.appendChild(chip);
+    });
+  }
+
+  async function handleSubmit() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    errorMsg.style.display = 'none';
+
+    if (!name || !email || !mobile || selectedDates.length === 0) {
+      errorMsg.textContent = 'Please fill in your name, email, mobile number, and select at least one date.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('mobile', mobile);
+    formData.append('availableDates', [...selectedDates].sort().join(', '));
+    formData.append('submittedAt', new Date().toLocaleString());
+
+    try {
+      await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData
+      });
+      // no-cors responses are opaque; if fetch didn't throw, the request was sent
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('successView').classList.add('visible');
+    } catch (err) {
+      console.error(err);
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Availability';
+      errorMsg.textContent = 'Something went wrong sending your response. Please check your internet connection and try again.';
+      errorMsg.style.display = 'block';
+    }
+  }
+
+  prevBtn.onclick = () => { if (currentMonth > 6) { currentMonth--; renderCalendar(); } };
+  nextBtn.onclick = () => { if (currentMonth < 8) { currentMonth++; renderCalendar(); } };
+  submitBtn.onclick = handleSubmit;
+
+  renderCalendar();
+</script>
+</body>
+</html>
